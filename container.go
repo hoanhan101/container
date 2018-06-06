@@ -3,50 +3,47 @@
    Author: Hoanh An (hoanhan@bennington.edu)
    Date: 06/06/18
 
-   Sample run commands:
-       go run container.go run <cmd> <args>
-       go run container.go run /bin/bash
+   Run commands:
+      go run container.go run <cmd> <args>
+
+      For example:
+      go run container.go run /bin/bash
 
    Why would we want to build our own container?
-   ---------------------------------------------------------------------------
-   The point is not to build our own container engine that we are gonna use in
-   production but more about how the building blocks work.
-   It's about understanding what namespaces are, what control group are, and
-   how we can use chroot to look at the subset of directory systems from
-   within the container.
+      The point is not to build our own container engine that we are gonna use
+      in production but more about how the building blocks work.
+      It's about understanding what namespaces are, what control group are, and
+      how we can use chroot to look at the subset of directory systems from
+      within the container.
 
-   Steps
-   ---------------------------------------------------------------------------
-   - Look at some characteristics of existing container and try to reproduce
-   from within the container we write ourselves.
-   - Start with the hostname namespace.
-   - Change the filesytem that the container can see.
-   - Look at namespacing and process IDs and how we need to interact with
-   /proc directory to do that.
-   - Use namespacing mounts for temporary filesystems.
-   - Update control groups to limit what the container can use.
-   - Make the container rootless.
+   Steps:
+      - Look at some characteristics of existing container and try to reproduce
+      from within the container we write ourselves.
+      - Start with the hostname namespace.
+      - Change the filesytem that the container can see.
+      - Look at namespacing and process IDs and how we need to interact with
+      /proc directory to do that.
+      - Use namespacing mounts for temporary filesystems.
+      - Update control groups to limit what the container can use.
+      - Make the container rootless.
 
-   Setup
-   ---------------------------------------------------------------------------
-   Need to use Ubuntu, instead of Mac is because some of the namespace files
-   that we're gonna use are only defined for Go's Linux.
+   Setup:
+      Need to use Ubuntu, instead of Mac is because some of the namespace files
+      that we're gonna use are only defined for Go's Linux.
 
    Docker behavior:
-   ---------------------------------------------------------------------------
-   These are sample docker commands:
-       docker run ubuntu:latest echo hello
-       docker run -ti ubuntu:latest /bin/bash
+      These are sample docker commands:
+          docker run ubuntu:latest echo hello
+          docker run -ti ubuntu:latest /bin/bash
 
-   Comparing to docker commands, our program will be a lot similar:
-       docker              run <image> <cmd> <args>
-       go run container.go run         <cmd> <args>
+      Comparing to docker commands, our program will be a lot similar:
+          docker              run <image> <cmd> <args>
+          go run container.go run         <cmd> <args>
 
-   Container namespaces
-   ---------------------------------------------------------------------------
-   Namespaces limit what we can see.
-   Created with syscall.
-   Inside the container, we can see a subset/some aspect of the whole machine.
+   Container namespaces:
+       Namespaces limit what we can see.
+       Created with syscall.
+       Inside the container, we can see a subset/some aspect of the whole machine.
 */
 
 package main
@@ -129,7 +126,7 @@ func child() {
 	check(cmd.Run())
 }
 
-// check checks if anything go wrong.
+// check panics if anything go wrong.
 func check(err error) {
 	if err != nil {
 		panic(err)
