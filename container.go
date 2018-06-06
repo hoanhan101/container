@@ -1,6 +1,5 @@
 /*
    container.go - Building a container from scratch.
-   Reference: O'Reilly Safari's Building Containers from Scratch with Go by Liz Rice
    Author: Hoanh An (hoanhan@bennington.edu)
    Date: 06/06/18
 
