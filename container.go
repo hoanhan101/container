@@ -49,9 +49,6 @@
       Chroot limits access to subset of directory tree on the host machine.
       We can setup a chroot to a directory on the host. From the container's
       point of view, that directory becomes its root directory.
-
-      In this example, we create a sample_fs folder that pretended to be a
-      filesystem. We are pointing our container root to that.
 */
 
 package main
@@ -128,8 +125,10 @@ func child() {
 	// Change the container hostname to container.
 	check(syscall.Sethostname([]byte("container")))
 
-	// Change container root to a sample filesystem.
-	check(syscall.Chroot("/root/container/sample_fs"))
+	// We must create a sample filesystem beforehand in order for this to work.
+	// Simply make a copy of the existing filesystem and name it sample_fs.
+	// Then chroot points to that.
+	check(syscall.Chroot("/home/sample_fs"))
 	check(os.Chdir("/"))
 
 	check(cmd.Run())
