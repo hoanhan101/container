@@ -11,7 +11,7 @@
 
    Why would we want to build our own container?
       The point is not to build our own container engine that we are gonna use
-      in production but more about how the building blocks work.
+      in production but to learn how the building blocks work.
       It's about understanding what namespaces are, what control group are, and
       how we can use chroot to look at the subset of directory systems from
       within the container.
@@ -44,6 +44,14 @@
        Namespaces limit what we can see.
        Created with syscall.
        Inside the container, we can see a subset/some aspect of the whole machine.
+
+   Chroot
+      Chroot limits access to subset of directory tree on the host machine.
+      We can setup a chroot to a directory on the host. From the container's
+      point of view, that directory becomes its root directory.
+
+      In this example, we create a sample_fs folder that pretended to be a
+      filesystem. We are pointing our container root to that.
 */
 
 package main
@@ -99,11 +107,8 @@ func run() {
 	// Cloneflags are parameters that will be used on the clone syscall
 	// function. Clone is actually what actually create a new process. Then we
 	// are asking for NEWUTS namespace, where UTS stands for Unix Timestamp System.
-	// At this point, the host's hostname is unchange even though the
-	// container, which has the namespace view of the hostname now has a
-	// different hostname. We've built some element of containerization here.
-	// The container can change its own hostname without affecting any other
-	// container or the host machine.
+	// We've built some element of containerization here. The container can
+	// change its own hostname without affecting any other container or the host machine.
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS,
 	}
@@ -122,6 +127,10 @@ func child() {
 
 	// Change the container hostname to container.
 	check(syscall.Sethostname([]byte("container")))
+
+	// Change container root to a sample filesystem.
+	check(syscall.Chroot("/root/container/sample_fs"))
+	check(os.Chdir("/"))
 
 	check(cmd.Run())
 }
