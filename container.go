@@ -52,12 +52,11 @@ func run() {
 	// This is the process of namespacing the hostname. We can specify the
 	// namespace we want by adding them to the cmd structure that we've setup.
 	// Cloneflags are parameters that will be used on the clone syscall
-	// function. Clone is actually what actually create a new process. Then we
-	// are asking for NEWUTS namespace, where UTS stands for Unix Timestamp System.
-	// We've built some element of containerization here. The container can
-	// change its own hostname without affecting any other container or the host machine.
+	// function. Clone is actually what actually create a new process.
+    // - CLONE_NEWUTS: UTS namespace, where UTS stands for Unix Timestamp System.
+    // - CLONE_NEWPID: Process IDs namespace
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS,
+        Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID,
 	}
 
 	// Not gonna execute until this Run function here.
