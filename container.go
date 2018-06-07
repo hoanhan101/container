@@ -1,11 +1,11 @@
 package main
 
 import (
-	"filepath"
 	"fmt"
-	"ioutil"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"syscall"
 )
@@ -113,6 +113,9 @@ func child() {
 	//
 	// Name the temporary file system temp_fs, mount it to our existing my_temp
 	// directory, specify that we want a tmpfs.
+	//
+	// After running `mount`, we should see:
+	// temp_fs on /my_temp type tmpfs (rw,relatime)
 	check(syscall.Mount("temp_fs", "my_temp", "tmpfs", 0, ""))
 
 	check(cmd.Run())
@@ -139,6 +142,16 @@ func child() {
 // children of that process will also be assigned to the same process. Processes
 // assigned to that directory within control group will inherit settings from
 // their parents.
+//
+// After executing `ls hoanh` inside /sys/fs/cgroup/memory in host machine, we
+// should we our files are created and settings are applied.
+//
+// Another way to check:
+// Inside the container, execute `sleep 1000` to model a long running process.
+// Inside the host machine, find that process id by `pidof sleep`. Say it
+// returns 23761. When we look at the content of cgroup.procs in hoanh
+// directory, we can see that 23771 is also there, which means that it has been
+// assigned to the control group.
 func set_cgroup() {
 	// Control group mounted on our host machine.
 	cgroups := "/sys/fs/cgroup/"
@@ -149,13 +162,11 @@ func set_cgroup() {
 	// Create (if doesn't exist) a sub directory named hoanh
 	os.Mkdir(filepath.Join(mem, "hoanh"), 0755)
 
-	// Inside that, write to 3 files: memory limit_in_bytes, swap memory
-	// limit_in_bytes, notify_on_release (if there is no more processes in left
+	// Inside that, write to files: memory limit_in_bytes,
+	// notify_on_release (if there is no more processes in left
 	// inside the control group, can delete the control group).
 	// 999424 is basically 1 MB.
 	check(ioutil.WriteFile(filepath.Join(mem, "hoanh/memory.limit_in_bytes"),
-		[]byte("999424"), 0700))
-	check(ioutil.WriteFile(filepath.Join(mem, "hoanh/memory.memsw.limit_in_bytes"),
 		[]byte("999424"), 0700))
 	check(ioutil.WriteFile(filepath.Join(mem, "hoanh/notify_on_release"),
 		[]byte("1"), 0700))
