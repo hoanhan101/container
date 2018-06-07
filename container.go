@@ -1,9 +1,12 @@
 package main
 
 import (
+	"filepath"
 	"fmt"
+	"ioutil"
 	"os"
 	"os/exec"
+	"strconv"
 	"syscall"
 )
 
@@ -68,6 +71,9 @@ func run() {
 func child() {
 	fmt.Printf("Running %v\n", os.Args[2:])
 
+	// Set control group.
+	set_cgroup()
+
 	cmd := exec.Command(os.Args[2], os.Args[3:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -114,6 +120,50 @@ func child() {
 	// Clean up after run.
 	check(syscall.Unmount("proc", 0))
 	check(syscall.Unmount("my_temp", 0))
+}
+
+// If namespace limits what users can see then control group limits what users can
+// use. For example, the mount of CPU, memory or network IO.
+//
+// Control groups are mounted as pseudo file system. To look at the control groups
+// that are mounted on the host machine, execute `mount | grep cgroup`
+//
+// Control groups are hierarchical. For example, there exists a directory called
+// docker inside `/sys/fs/cgroup/memory`. If we look inside it, we will see a
+// whole other set of premises, applying to the members of docker cgroup.
+//
+// By default, processes get assigned to the top level control group. For example,
+// For memory, each process get written to cgroup.procs by default. If we want to
+// assign a process to a particular control group, we can write it into the sub
+// directory for that control group, within that cgroup.procs file. All the
+// children of that process will also be assigned to the same process. Processes
+// assigned to that directory within control group will inherit settings from
+// their parents.
+func set_cgroup() {
+	// Control group mounted on our host machine.
+	cgroups := "/sys/fs/cgroup/"
+
+	// Write to memory control group hierarchy.
+	mem := filepath.Join(cgroups, "memory")
+
+	// Create (if doesn't exist) a sub directory named hoanh
+	os.Mkdir(filepath.Join(mem, "hoanh"), 0755)
+
+	// Inside that, write to 3 files: memory limit_in_bytes, swap memory
+	// limit_in_bytes, notify_on_release (if there is no more processes in left
+	// inside the control group, can delete the control group).
+	// 999424 is basically 1 MB.
+	check(ioutil.WriteFile(filepath.Join(mem, "hoanh/memory.limit_in_bytes"),
+		[]byte("999424"), 0700))
+	check(ioutil.WriteFile(filepath.Join(mem, "hoanh/memory.memsw.limit_in_bytes"),
+		[]byte("999424"), 0700))
+	check(ioutil.WriteFile(filepath.Join(mem, "hoanh/notify_on_release"),
+		[]byte("1"), 0700))
+
+	// Get the current process id and write it to the cgroup.procs file.
+	pid := strconv.Itoa(os.Getpid())
+	check(ioutil.WriteFile(filepath.Join(mem, "hoanh/cgroup.procs"),
+		[]byte(pid), 0700))
 }
 
 // check panics if anything go wrong.

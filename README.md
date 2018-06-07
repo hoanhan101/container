@@ -66,26 +66,3 @@ Comparing to docker commands, our program will be a lot similar:
 docker              run <image> <cmd> <args>
 go run container.go run         <cmd> <args>
 ```
-
-**Control group:**
-
-If namespace limits what users can see then control group limits what users can
-use. For example, the mount of CPU, memory or network IO.
-
-Control groups are mounted as pseudo file system. To look at the control groups
-that are mounted on the host machine, execute:
-```
-mount | grep cgroup
-```
-
-Control groups are hierarchical. For example, there exists a directory called
-docker inside `/sys/fs/cgroup/memory`. If we look inside it, we will see a
-whole other set of premises, applying to the members of docker cgroup.
-
-By default, processes get assigned to the top level control group. For example,
-For memory, each process get written to cgroup.procs by default. If we want to
-assign a process to a particular control group, we can write it into the sub
-directory for that control group, within that cgroup.procs file. All the
-children of that process will also be assigned to the same process. Processes
-assigned to that directory within control group will inherit settings from
-their parents.
