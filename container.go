@@ -53,10 +53,10 @@ func run() {
 	// namespace we want by adding them to the cmd structure that we've setup.
 	// Cloneflags are parameters that will be used on the clone syscall
 	// function. Clone is actually what actually create a new process.
-    // - CLONE_NEWUTS: UTS namespace, where UTS stands for Unix Timestamp System.
-    // - CLONE_NEWPID: Process IDs namespace
+	// - CLONE_NEWUTS: UTS namespace, where UTS stands for Unix Timestamp System.
+	// - CLONE_NEWPID: Process IDs namespace
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-        Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID,
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID,
 	}
 
 	// Not gonna execute until this Run function here.
@@ -99,10 +99,19 @@ func child() {
 	// `/procs` file system available. Therefore, we need to mount it.
 	check(syscall.Mount("proc", "proc", "proc", 0, ""))
 
+	// Mount a temporary file system (tmpfs). It looks and behaves just like a normal
+	// file system. However, rather writing files and directories to disk, it
+	// holds in memory.
+	//
+	// Name the temporary file system temp_fs, mount it to our existing my_temp
+	// directory, specify that we want a tmpfs.
+	check(syscall.Mount("temp_fs", "my_temp", "tmpfs", 0, ""))
+
 	check(cmd.Run())
 
 	// Clean up after run.
 	check(syscall.Unmount("proc", 0))
+	check(syscall.Unmount("my_temp", 0))
 }
 
 // check panics if anything go wrong.
