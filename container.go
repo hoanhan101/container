@@ -90,7 +90,7 @@ func child() {
 	// the directory called `/proc` to get process informations. From the host machine
 	// point of view, we can see all the processes running on it.
 	//
-	// `/proc` isn't just a regular file system but a pseudo-file system. It does not
+	// `/proc` isn't just a regular file system but a pseudo file system. It does not
 	// contain real files but rather runtime system information (e.g. system
 	// memory, devices mounted, hardware configuration, etc). It is a mechanism the
 	// kernel uses to communicate information about running processes from the kernel
