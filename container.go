@@ -54,9 +54,11 @@ func run() {
 	// Cloneflags are parameters that will be used on the clone syscall
 	// function. Clone is actually what actually create a new process.
 	// - CLONE_NEWUTS: UTS namespace, where UTS stands for Unix Timestamp System.
-	// - CLONE_NEWPID: Process IDs namespace
+	// - CLONE_NEWPID: Process IDs namespace.
+	// - CLONE_NEWNS: Mount namespace to make the mount point only visible
+	//   inside the container.
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID,
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
 	}
 
 	// Not gonna execute until this Run function here.
