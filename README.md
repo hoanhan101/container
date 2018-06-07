@@ -32,10 +32,10 @@ within the container.
 - Look at some characteristics of existing container and try to reproduce
 from within the container we write ourselves.
 - Start with the hostname namespace.
-- Change the filesytem that the container can see.
+- Change the file system that the container can see.
 - Look at namespacing and process IDs and how we need to interact with
 /proc directory to do that.
-- Use namespacing mounts for temporary filesystems.
+- Use namespacing mounts for temporary file system.
 - Update control groups to limit what the container can use.
 - Make the container rootless.
 
@@ -59,15 +59,3 @@ Comparing to docker commands, our program will be a lot similar:
 docker              run <image> <cmd> <args>
 go run container.go run         <cmd> <args>
 ```
-
-**Container namespaces:**
-
-- Namespaces limit what we can see.
-- Created with syscall.
-- Inside the container, we can see a subset/some aspect of the whole machine.
-
-**Chroot:**
-
-Chroot limits access to subset of directory tree on the host machine.
-We can setup a chroot to a directory on the host. From the container's
-point of view, that directory becomes its root directory.

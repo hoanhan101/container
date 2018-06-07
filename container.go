@@ -46,6 +46,9 @@ func run() {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
+	// Namespaces limit what we can see. Created with syscall.
+	// Inside the container, we can see a subset/some aspect of the whole machine.
+	//
 	// This is the process of namespacing the hostname. We can specify the
 	// namespace we want by adding them to the cmd structure that we've setup.
 	// Cloneflags are parameters that will be used on the clone syscall
@@ -72,13 +75,35 @@ func child() {
 	// Change the container hostname to container.
 	check(syscall.Sethostname([]byte("container")))
 
+	// Chroot limits access to subset of directory tree on the host machine.
+	// We can setup a chroot to a directory on the host. From the container's
+	// point of view, that directory becomes its root directory.
+	//
 	// We must create a sample filesystem beforehand in order for this to work.
 	// Simply make a copy of the existing filesystem and name it sample_fs.
 	// Then chroot points to that.
 	check(syscall.Chroot("/home/sample_fs"))
 	check(os.Chdir("/"))
 
+	// When we execute `ps`, we are able to see the process IDs. It will look inside
+	// the directory called `/proc` to get process informations. From the host machine
+	// point of view, we can see all the processes running on it.
+	//
+	// `/proc` isn't just a regular file system but a pseudo-file system. It does not
+	// contain real files but rather runtime system information (e.g. system
+	// memory, devices mounted, hardware configuration, etc). It is a mechanism the
+	// kernel uses to communicate information about running processes from the kernel
+	// space into user spaces. From the user space, it looks like a normal file
+	// system.
+	//
+	// Because we change the root inside the container, we don't currently have this
+	// `/procs` file system available. Therefore, we need to mount it.
+	check(syscall.Mount("proc", "proc", "proc", 0, ""))
+
 	check(cmd.Run())
+
+	// Clean up after run.
+	check(syscall.Unmount("proc", 0))
 }
 
 // check panics if anything go wrong.
