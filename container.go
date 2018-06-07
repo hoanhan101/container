@@ -60,6 +60,9 @@ func run() {
 	// - CLONE_NEWPID: Process IDs namespace.
 	// - CLONE_NEWNS: Mount namespace to make the mount point only visible
 	//   inside the container.
+	// - CLONE_NEWUSER: containerize processes without needing root
+	//   privileges. We don't allow this in our code. However, please refer
+	//   back to the original lesson by Liz for more details.
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
 	}
